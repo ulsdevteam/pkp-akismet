@@ -159,7 +159,8 @@ class AkismetPlugin extends GenericPlugin {
 	function checkAkismet($hookName, $args) {
 		// The Akismet API key is required
 		$journal =& Request::getJournal();
-		if (empty($this->getSetting($journal->getId(), 'akismetKey'))) {
+		$apikey = $this->getSetting($journal->getId(), 'akismetKey');
+		if (empty($apikey)) {
 			return false;
 		}
 		// Supported hooks must be enumerated here to identify the content to be checked and the form being used
