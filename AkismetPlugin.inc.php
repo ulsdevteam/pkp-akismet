@@ -206,7 +206,6 @@ class AkismetPlugin extends GenericPlugin {
 				'referrer' => $_SERVER['HTTP_REFERER'],
 				'blog_lang' => implode(', ', array_unique($iso639_1)),
 				'blog_charset' => '',
-				'is_test' => 'true',
 			)
 		);
 		// if the form is already invalid, do not check Akismet

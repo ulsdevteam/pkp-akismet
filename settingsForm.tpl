@@ -18,12 +18,18 @@
 
 <br />
 
+{if $akismetKey}
+<p class="akismentKeySet">
+{translate key="plugins.generic.akismet.manager.settings.akismetKeySet"}
+<p>
+{/if}
+
 <form method="post" action="{plugin_url path="settings"}">
 {include file="common/formErrors.tpl"}
 <table width="100%" class="data">
 	<tr valign="top" id="akismetPath">
 		<td width="20%" class="label">{fieldLabel name="akismetKey" key="plugins.generic.akismet.manager.settings.akismetKey" required="true"}</td>
-		<td width="80%" class="value"><input type="text" name="akismetKey" id="akismetKey" value="{$akismetKey|escape}" size="25" class="textField" /></td>
+		<td width="80%" class="value"><input type="text" name="akismetKey" id="akismetKey" value="" size="25" class="textField" /></td>
 	</tr>
 </table>
 
