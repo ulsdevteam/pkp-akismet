@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+
+<!--
+  * plugins/generic/akismet/locale/en_US/locale.xml
+  *
+  * Copyright (c) 2018 University of Pittsburgh
+  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+  *
+  * Akismet anti-spam plugin localization strings
+  -->
+ 
+<locale name="en_US" full_name="U.S. English">
+
+	<!-- Akismet -->
+	<message key="plugins.generic.akismet.displayName">Akismet anti-spam</message>
+	<message key="plugins.generic.akismet.description"><![CDATA[Integrate OJS with Akismet for new user registrations.  Through this plugin, OJS can submit each new user registration to Akismet, and will reject those Akismet identifies as spam.]]></message>
+	<message key="plugins.generic.akismet.spamDetected">This entry has been flagged as spam.</message>
+	<!-- Akismet Settings Management -->
+	<message key="plugins.generic.akismet.manager.akismetSettings">Akismet Settings</message>
+	<message key="plugins.generic.akismet.manager.settings.description"><![CDATA[<p>Please provide the Akismet API key.  You must already have registered with <a href="https://akismet.com/">Akismet</a> for the service.</p>]]></message>
+	<message key="plugins.generic.akismet.manager.settings.akismetKey">The Akismet API key.</message>
+	<message key="plugins.generic.akismet.manager.settings.akismetKeyRequired">The Akismet API key is required.</message>
+</locale>
