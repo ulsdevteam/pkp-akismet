@@ -9,7 +9,7 @@
  * @class AkismetSettingsForm
  * @ingroup plugins_generic_akismet
  *
- * @brief Form for journal managers to modify Plum Analytics plugin settings
+ * @brief Form for journal managers to modify Akismet plugin settings
  */
 
 
