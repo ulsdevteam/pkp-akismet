@@ -18,7 +18,9 @@ You will need to provide your Akismet API key within the plugin settings.
 
 ## Usage
 
-When a new user registers within a journal context, the user input will be submitted to Akismet for analysis.  If the user is identified by Akismet as spam, the registration will be blocked.
+When a new user registers within a journal context, the user input will be submitted to Akismet for analysis.  If the user is identified by Akismet as spam, the registration will be blocked.  If Akismet allows a spam registration, the journal manager can use the "Edit User" form to report that user as spam to Akismet.
+
+If article comments are enabled, user input for comments will also be submitted to Akismet for analysis. If the comment is identified by Akismet as spam, the comment will be blocked.
 
 ## Author / License
 

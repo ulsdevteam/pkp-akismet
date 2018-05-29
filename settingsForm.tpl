@@ -19,7 +19,7 @@
 <br />
 
 {if $akismetKey}
-<p class="akismentKeySet">
+<p class="akismetKeySet">
 {translate key="plugins.generic.akismet.manager.settings.akismetKeySet"}
 <p>
 {/if}
