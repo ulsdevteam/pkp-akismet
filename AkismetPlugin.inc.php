@@ -168,7 +168,7 @@ class AkismetPlugin extends GenericPlugin {
 				$userid = $args[0];
 				if ($this->reportMissedSpamUser($userid)) {
 					$this->unsetAkismetData($userid);
-					$notificationManager->createTrivialNotification($user->getId(), NOTICATION_TYPE_SUCCESS, array('contents' => __('plugins.generic.akismet.spamDetected')));
+					$notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SUCCESS, array('contents' => __('plugins.generic.akismet.spamDetected')));
 				} else {
 					$notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_ERROR, array('contents' => __('plugins.generic.akismet.spamFailed')));
 				}
