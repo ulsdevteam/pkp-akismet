@@ -70,6 +70,7 @@ class markSpamUser extends CommandLineTool {
 
 		// User exists and has Akismet data, proceed.
 		if ($plugin->reportMissedSpamUser($userId)) {
+			$plugin->unsetAkismetData($userId);
 			printf("Reported as missed spam: '%s'.\n",
 				$this->username
 			);
