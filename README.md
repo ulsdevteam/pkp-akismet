@@ -14,13 +14,15 @@ Install this as a "generic" plugin in OJS.  To install manually via the filesyst
 
 ## Configuration
 
-You will need to provide your Akismet API key within the plugin settings.
+You will need to provide your Akismet API key within the plugin settings.  This plugin only supports one Akismet key per site, and only the Site Administrator can edit the plugin settings.  The plugin may be enabled or disabled per journal by Journal Managers.
 
 ## Usage
 
 When a new user registers within a journal context, the user input will be submitted to Akismet for analysis.  If the user is identified by Akismet as spam, the registration will be blocked.  If Akismet allows a spam registration, the journal manager can use the "Edit User" form to report that user as spam to Akismet.
 
 If article comments are enabled, user input for comments will also be submitted to Akismet for analysis. If the comment is identified by Akismet as spam, the comment will be blocked.
+
+If a spam user is missed by Akismet, a Journal Manager can edit that user's profile to find a button to submit that user to Akismet as spam.  A CLI tool is also provided for this purpose.
 
 ## Author / License
 

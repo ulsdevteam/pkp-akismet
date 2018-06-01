@@ -112,7 +112,7 @@ class AkismetPlugin extends GenericPlugin {
 	 */
 	function getManagementVerbs() {
 		$verbs = array();
-		if ($this->getEnabled()) {
+		if ($this->getEnabled() && Validation::isSiteAdmin()) {
 			$verbs[] = array('settings', __('manager.plugins.settings'));
 		}
 		return parent::getManagementVerbs($verbs);
@@ -129,7 +129,7 @@ class AkismetPlugin extends GenericPlugin {
 	function manage($verb, $args, &$message, &$messageParams) {
 		if (!parent::manage($verb, $args, $message, $messageParams)) {
 			// If enabling this plugin, go directly to the settings
-			if ($verb == 'enable') {
+			if ($verb == 'enable'  && Validation::isSiteAdmin()) {
 				$verb = 'settings';
 			} else {
 				return false;
@@ -141,12 +141,15 @@ class AkismetPlugin extends GenericPlugin {
 		$notificationManager = new NotificationManager();
 		switch ($verb) {
 			case 'settings':
+				if (!Validation::isSiteAdmin()) {
+					assert(false);
+					return false;
+				}
 				$templateMgr =& TemplateManager::getManager();
 				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
-				$journal =& Request::getJournal();
 
 				$this->import('AkismetSettingsForm');
-				$form = new AkismetSettingsForm($this, $journal->getId());
+				$form = new AkismetSettingsForm($this);
 				if (Request::getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
@@ -187,7 +190,7 @@ class AkismetPlugin extends GenericPlugin {
 	function checkAkismet($hookName, $args) {
 		// The Akismet API key is required
 		$journal =& Request::getJournal();
-		$apikey = $this->getSetting($journal->getId(), 'akismetKey');
+		$apikey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
 		if (empty($apikey)) {
 			return false;
 		}
@@ -387,8 +390,7 @@ class AkismetPlugin extends GenericPlugin {
 			}
 		}
 		$requestBody = ltrim($requestBody, '&');
-		$journal =& Request::getJournal();
-		$host = $this->getSetting($journal->getId(), 'akismetKey').'.rest.akismet.com';
+		$host = $this->getSetting(CONTEXT_SITE, 'akismetKey').'.rest.akismet.com';
 		$port = 443;
 		$path = '/1.1/' . ($flag ? 'submit-spam' : 'comment-check');
 		$versionDao =& DAORegistry::getDAO('VersionDAO');

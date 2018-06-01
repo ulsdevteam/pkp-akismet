@@ -9,7 +9,7 @@
  * @class AkismetSettingsForm
  * @ingroup plugins_generic_akismet
  *
- * @brief Form for journal managers to modify Akismet plugin settings
+ * @brief Form for site admins to modify Akismet plugin settings
  */
 
 
@@ -17,20 +17,15 @@ import('lib.pkp.classes.form.Form');
 
 class AkismetSettingsForm extends Form {
 
-	/** @var $journalId int */
-	var $journalId;
-
 	/** @var $plugin object */
 	var $plugin;
 
 	/**
 	 * Constructor
 	 * @param $plugin object
-	 * @param $journalId int
 	 */
-	function AkismetSettingsForm(&$plugin, $journalId) {
+	function AkismetSettingsForm(&$plugin) {
 		$this->plugin =& $plugin;
-		$this->journalId = $journalId;
 		
 		parent::Form($plugin->getTemplatePath() . 'settingsForm.tpl');
 
@@ -45,7 +40,7 @@ class AkismetSettingsForm extends Form {
 		$plugin =& $this->plugin;
 
 		$this->_data = array();
-		$this->_data['akismetKey'] = $plugin->getSetting($this->journalId, 'akismetKey');
+		$this->_data['akismetKey'] = $plugin->getSetting(CONTEXT_SITE, 'akismetKey');
 	}
 
 	/**
@@ -60,7 +55,7 @@ class AkismetSettingsForm extends Form {
 	 */
 	function execute() {
 		$plugin =& $this->plugin;
-		$plugin->updateSetting($this->journalId, 'akismetKey', $this->getData('akismetKey'), 'string');
+		$plugin->updateSetting(CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
 	}
 
 }
