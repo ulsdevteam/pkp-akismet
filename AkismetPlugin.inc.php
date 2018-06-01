@@ -47,7 +47,23 @@ class AkismetPlugin extends GenericPlugin {
 			}
 		return $success;
 	}
-	
+
+	/**
+	 * Override the getEnabled() method to support CLI use
+	 * @see LazyLoadPlugin::getEnabled
+	 */
+	function getEnabled() {
+		// Check the parent's functionality for normal enabling at the journal level
+		if (parent::getEnabled()) {
+			return true;
+		}
+		// If we are running in a CLI, the plugin is always enabled at the site level
+		if (!isset($_SERVER['SERVER_NAME'])) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Add the Akismet data to the User DAO
 	 * @see DAO::getAddtionalFieldNames

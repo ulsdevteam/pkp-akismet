@@ -48,8 +48,7 @@ class markSpamUser extends CommandLineTool {
 	 * Execute the merge users command.
 	 */
 	function execute() {
-		import('plugins.generic.akismet.AkismetPlugin');
-		$plugin = new AkismetPlugin();
+		$plugin =& PluginRegistry::getPlugin('generic', 'akismetplugin');
 		$userDao =& DAORegistry::getDAO('UserDAO');
 
 		$user =& $userDao->getUserbyUsername($this->username);
