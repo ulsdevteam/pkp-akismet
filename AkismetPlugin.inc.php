@@ -398,6 +398,10 @@ class AkismetPlugin extends GenericPlugin {
 				return false;
 			}
 		}
+		$akismetKey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
+		if (empty($akismetKey)) {
+			return false;
+		}
 		// build the Akismet HTTP request
 		$requestBody = '';
 		foreach ($data as $k => $v) {
@@ -406,7 +410,7 @@ class AkismetPlugin extends GenericPlugin {
 			}
 		}
 		$requestBody = ltrim($requestBody, '&');
-		$host = $this->getSetting(CONTEXT_SITE, 'akismetKey').'.rest.akismet.com';
+		$host = $akismetKey.'.rest.akismet.com';
 		$port = 443;
 		$path = '/1.1/' . ($flag ? 'submit-spam' : 'comment-check');
 		$versionDao =& DAORegistry::getDAO('VersionDAO');
