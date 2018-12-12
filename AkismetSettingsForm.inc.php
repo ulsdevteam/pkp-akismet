@@ -3,7 +3,7 @@
 /**
  * @file plugins/generic/akismet/AkismetSettingsForm.inc.php
  *
- * Copyright (c) 2018 University of Pittsburgh
+ * Copyright (c) University of Pittsburgh
  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
  *
  * @class AkismetSettingsForm
@@ -18,18 +18,18 @@ import('lib.pkp.classes.form.Form');
 class AkismetSettingsForm extends Form {
 
 	/** @var $plugin object */
-	var $plugin;
+	var $_plugin;
 
 	/**
 	 * Constructor
 	 * @param $plugin object
 	 */
-	function AkismetSettingsForm(&$plugin) {
-		$this->plugin =& $plugin;
+	function __construct($plugin) {
+		$this->_plugin = $plugin;
 		
-		parent::Form($plugin->getTemplatePath() . 'settingsForm.tpl');
+		parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
 
-		$this->addCheck(new FormValidator($this, 'akismetKey', 'required', 'plugins.generic.akismet.manager.settings.akismetKeyRequired'));
+		$this->addCheck(new FormValidator($this, 'akismetKey', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.akismet.manager.settings.akismetKeyRequired'));
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
@@ -37,10 +37,9 @@ class AkismetSettingsForm extends Form {
 	 * Initialize form data.
 	 */
 	function initData() {
-		$plugin =& $this->plugin;
+		$plugin = $this->_plugin;
 
-		$this->_data = array();
-		$this->_data['akismetKey'] = $plugin->getSetting(CONTEXT_SITE, 'akismetKey');
+		$this->setData('akismetKey', $plugin->getSetting(CONTEXT_SITE, 'akismetKey'));
 	}
 
 	/**
@@ -54,10 +53,17 @@ class AkismetSettingsForm extends Form {
 	 * Save settings.
 	 */
 	function execute() {
-		$plugin =& $this->plugin;
+		$plugin = $this->_plugin;
 		$plugin->updateSetting(CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
 	}
 
+	/**
+	 * Fetch the form.
+	 * @copydoc Form::fetch()
+	 */
+	function fetch($request) {
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('pluginName', $this->_plugin->getName());
+		return parent::fetch($request);
+	}
 }
-
-?>

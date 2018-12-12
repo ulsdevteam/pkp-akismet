@@ -4,7 +4,7 @@
 <!--
   * plugins/generic/akismet/version.xml
   *
-  * Copyright (c) 2018 University of Pittsburgh
+  * Copyright (c) University of Pittsburgh
   * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
   *
   * Plugin version information.
@@ -12,8 +12,8 @@
 <version>
 	<application>akismet</application>
 	<type>plugins.generic</type>
-	<release>1.1.0.0</release>
-	<date>2018-06-01</date>
+	<release>1.2.0.0</release>
+	<date>2018-12-11</date>
 	<lazy-load>1</lazy-load>
 	<class>AkismetPlugin</class>
 </version>

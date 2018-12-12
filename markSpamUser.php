@@ -3,7 +3,7 @@
 /**
  * @file plugins/generic/akismet/markSpamUser.php
  *
- * Copyright (c) 2018 University of Pittsburgh
+ * Copyright (c) University of Pittsburgh
  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
  *
  * @class markSpamUser
@@ -24,7 +24,7 @@ class markSpamUser extends CommandLineTool {
 	 * @param $argv array command-line arguments
 	 */
 	function markSpamUser($argv = array()) {
-		parent::CommandLineTool($argv);
+		parent::__construct($argv);
 
 		if (!isset($this->argv[0])) {
 			$this->usage();
@@ -48,10 +48,10 @@ class markSpamUser extends CommandLineTool {
 	 * Execute the merge users command.
 	 */
 	function execute() {
-		$plugin =& PluginRegistry::getPlugin('generic', 'akismetplugin');
-		$userDao =& DAORegistry::getDAO('UserDAO');
+		$plugin = PluginRegistry::getPlugin('generic', 'akismetplugin');
+		$userDao = DAORegistry::getDAO('UserDAO');
 
-		$user =& $userDao->getUserbyUsername($this->username);
+		$user = $userDao->getByUsername($this->username);
 
 		$userId = isset($user) ? $user->getId() : null;
 		if (empty($userId)) {
@@ -83,4 +83,3 @@ class markSpamUser extends CommandLineTool {
 
 $tool = new markSpamUser(isset($argv) ? $argv : array());
 $tool->execute();
-?>

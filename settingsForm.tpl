@@ -1,38 +1,30 @@
 {**
  * plugins/generic/akismet/settingsForm.tpl
  *
- * Copyright (c) 2018 University of Pittsburgh
- * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
+ * Copyright (c) University of Pittsburgh
+ * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * Akismet plugin settings
  *
  *}
-{strip}
-{assign var="pageTitle" value="plugins.generic.akismet.manager.akismetSettings"}
-{include file="common/header.tpl"}
-{/strip}
-<div id="akismetSettings">
-<div id="description">{translate key="plugins.generic.akismet.manager.settings.description"}</div>
+<script>
+	$(function() {ldelim}
+		// Attach the form handler.
+		$('#akismetSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+	{rdelim});
+</script>
 
-<div class="separator"></div>
+<form class="pkp_form" id="akismetSettingsForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
+	{csrf}
+	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="akismetSettingsFormNotification"}
 
-<br />
+	<div id="description">{translate key="plugins.generic.akismet.manager.settings.description"}</div>
 
-<form method="post" action="{plugin_url path="settings"}">
-{include file="common/formErrors.tpl"}
-<table width="100%" class="data">
-	<tr valign="top" id="akismetPath">
-		<td width="20%" class="label">{fieldLabel name="akismetKey" key="plugins.generic.akismet.manager.settings.akismetKey" required="true"}</td>
-		<td width="80%" class="value"><input type="text" name="akismetKey" id="akismetKey" value="{$akismetKey}" size="25" class="textField" /></td>
-	</tr>
-</table>
+	{fbvFormArea id="akismetSettingsFormArea"}
+		{fbvElement type="text" name="akismetKey" value=$akismetKey label="plugins.generic.akismet.manager.settings.akismetKey"}
+	{/fbvFormArea}
 
-<br/>
+	{fbvFormButtons}
 
-<input type="submit" name="save" class="button defaultButton" value="{translate key="common.save"}"/>
-<input type="button" class="button" value="{translate key="common.cancel"}" onclick="history.go(-1)"/>
+	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 </form>
-
-<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
-</div>
-{include file="common/footer.tpl"}

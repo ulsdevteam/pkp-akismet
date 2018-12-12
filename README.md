@@ -4,13 +4,13 @@ This plugin verifies new user registrations via the [Akismet anti-spam service](
 
 ## Requirements
 
-* OJS 2.4.x
+* OJS 3.x (for OJS 2.4.x, see the ojs-dev-2_4 branch)
 * PHP 5.3 or later
 * Akismet API key
 
 ## Installation
 
-Install this as a "generic" plugin in OJS.  To install manually via the filesystem, extract the contents of this archive to an "akismet" directory under "plugins/generic" in your OJS root.  To install via Git submodule, target that same directory path: `git submodule add https://github.com/ulsdevteam/pkp-akismet plugins/generic/akismet` and `git submodule update --init --recursive plugins/generic/akismet`.  Run the upgrade script to register this plugin, e.g.: `php tools/upgrade.php upgrade`
+Install this as a "generic" plugin in OJS. The preferred installation method is through the Plugin Gallery.  To install manually via the filesystem, extract the contents of this archive to an "akismet" directory under "plugins/generic" in your OJS root.  To install via Git submodule, target that same directory path: `git submodule add https://github.com/ulsdevteam/pkp-akismet plugins/generic/akismet` and `git submodule update --init --recursive plugins/generic/akismet`.  Run the upgrade script to register this plugin, e.g.: `php tools/upgrade.php upgrade`
 
 ## Configuration
 

@@ -4,7 +4,7 @@
 <!--
   * plugins/generic/akismet/locale/en_US/locale.xml
   *
-  * Copyright (c) 2018 University of Pittsburgh
+  * Copyright (c) University of Pittsburgh
   * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
   *
   * Akismet anti-spam plugin localization strings
@@ -20,7 +20,10 @@
 	<!-- Akismet Settings Management -->
 	<message key="plugins.generic.akismet.manager.akismetSettings">Akismet Settings</message>
 	<message key="plugins.generic.akismet.manager.settings.description"><![CDATA[<p>Please provide the Akismet API key.  You must already have registered with <a href="https://akismet.com/">Akismet</a> for the service.</p>]]></message>
-	<message key="plugins.generic.akismet.manager.settings.akismetKey">Akismet API key:</message>
+	<message key="plugins.generic.akismet.manager.settings.akismetKey">Akismet API key</message>
 	<message key="plugins.generic.akismet.manager.settings.akismetKeyRequired">The Akismet API key is required.</message>
-	<message key="plugins.generic.akismet.manager.flagAsSpam">Report as spam to Akismet</message>
+	<!-- Akismet UI actions -->
+	<message key="plugins.generic.akismet.actions.flagAsSpam">Report as spam</message>
+	<message key="plugins.generic.akismet.grid.action.flagAsSpam">Report as spam to Akismet</message>
+	<message key="plugins.generic.akismet.actions.confirmFlagAsSpam">Do you want to report this user's registration to Akismet as spam?</message>
 </locale>

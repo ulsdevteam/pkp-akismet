@@ -3,7 +3,7 @@
 /**
  * @file plugins/generic/akismet/AkismetPlugin.inc.php
  *
- * Copyright (c) 2018 University of Pittsburgh
+ * Copyright (c) University of Pittsburgh
  * Distributed under the GNU GPL v2 or later. For full terms see the LICENSE file.
  *
  * @class AkismetPlugin
@@ -39,11 +39,12 @@ class AkismetPlugin extends GenericPlugin {
 
 			// Enable Akismet anti-spam check of new registrations
 			HookRegistry::register('registrationform::validate', array(&$this, 'checkAkismet'));
-			HookRegistry::register('commentform::validate', array(&$this, 'checkAkismet'));
 			HookRegistry::register('registrationform::execute', array(&$this, 'storeAkismetData'));
 			HookRegistry::register('userdao::getAdditionalFieldNames', array(&$this, 'addAkismetSetting'));
 			// Add a link to mark a missed spam user
-			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
+			HookRegistry::register('TemplateManager::fetch', array($this, 'templateFetchCallback'));
+			// Add a handler to process a missed spam user
+			HookRegistry::register('LoadComponentHandler', array($this, 'callbackLoadHandler'));
 			}
 		return $success;
 	}
@@ -91,112 +92,52 @@ class AkismetPlugin extends GenericPlugin {
 	}
 
 	/**
-	 * Set the page's breadcrumbs, given the plugin's tree of items
-	 * to append.
-	 * @param $isSubclass boolean
+	 * @copydoc Plugin::getActions()
 	 */
-	function setBreadcrumbs($isSubclass = false) {
-		$templateMgr =& TemplateManager::getManager();
-		$pageCrumbs = array(
-			array(
-				Request::url(null, 'user'),
-				'navigation.user'
+	function getActions($request, $verb) {
+		$router = $request->getRouter();
+		import('lib.pkp.classes.linkAction.request.AjaxModal');
+		// Must be site administrator to access the settings option
+		return array_merge(
+				$this->getEnabled() && Validation::isSiteAdmin() ? array(
+			new LinkAction(
+					'settings', new AjaxModal(
+					$router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')), $this->getDisplayName()
+					), __('manager.plugins.settings'), null
 			),
-			array(
-				Request::url(null, 'manager'),
-				'user.role.manager'
-			)
+				) : array(), parent::getActions($request, $verb)
 		);
-		if ($isSubclass) {
-			$pageCrumbs[] = array(
-				Request::url(null, 'manager', 'plugins'),
-				'manager.plugins'
-			);
-			$pageCrumbs[] = array(
-				Request::url(null, 'manager', 'plugins', 'generic'),
-				'plugins.categories.generic'
-			);
-		}
-
-		$templateMgr->assign('pageHierarchy', $pageCrumbs);
-	}
-
-
-	/**
-	 * Display verbs for the management interface.
-	 * @return array of verb => description pairs
-	 */
-	function getManagementVerbs() {
-		$verbs = array();
-		if ($this->getEnabled() && Validation::isSiteAdmin()) {
-			$verbs[] = array('settings', __('manager.plugins.settings'));
-		}
-		return parent::getManagementVerbs($verbs);
 	}
 
 	/**
-	 * Execute a management verb on this plugin
-	 * @param $verb string
-	 * @param $args array
-	 * @param $message string Result status message
-	 * @param $messageParams array Parameters for the message key
-	 * @return boolean
+	 * @copydoc Plugin::manage()
 	 */
-	function manage($verb, $args, &$message, &$messageParams) {
-		if (!parent::manage($verb, $args, $message, $messageParams)) {
-			// If enabling this plugin, go directly to the settings
-			if ($verb == 'enable'  && Validation::isSiteAdmin()) {
-				$verb = 'settings';
-			} else {
-				return false;
-			}
-		}
-
+	function manage($args, $request) {
 		$user =& Request::getUser();
 		import('classes.notification.NotificationManager');
 		$notificationManager = new NotificationManager();
-		switch ($verb) {
+		switch ($request->getUserVar('verb')) {
 			case 'settings':
 				if (!Validation::isSiteAdmin()) {
-					assert(false);
-					return false;
+					return new JSONMessage(false);
 				}
 				$templateMgr =& TemplateManager::getManager();
 				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
 
 				$this->import('AkismetSettingsForm');
 				$form = new AkismetSettingsForm($this);
-				if (Request::getUserVar('save')) {
+				if ($request->getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
 						$form->execute();
-						$notificationManager->createTrivialNotification($user->getId());
-						Request::redirect(null, 'manager', 'plugins', 'generic');
-						return false;
-					} else {
-						$this->setBreadCrumbs(true);
-						$form->display();
+						return new JSONMessage(true);
 					}
 				} else {
-					$form->initData();
-					$this->setBreadCrumbs(true);
-					$form->display();
+						$form->initData();
 				}
-				return true;
-			case 'markSpamUser':
-				$userid = $args[0];
-				if ($this->reportMissedSpamUser($userid)) {
-					$this->unsetAkismetData($userid);
-					$notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SUCCESS, array('contents' => __('plugins.generic.akismet.spamDetected')));
-				} else {
-					$notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_ERROR, array('contents' => __('plugins.generic.akismet.spamFailed')));
-				}
-				Request::redirect(null, 'manager', 'editUser', $userid);
-			default:
-				// Unknown management verb
-				assert(false);
-				return false;
+				return new JSONMessage(true, $form->fetch($request));
 		}
+		return parent::manage($args, $request);
 	}
 	
 	/**
@@ -204,8 +145,9 @@ class AkismetPlugin extends GenericPlugin {
 	 * @see Form::validate()
 	 */
 	function checkAkismet($hookName, $args) {
+		$request = Application::getRequest();
+		$context = $request->getContext();
 		// The Akismet API key is required
-		$journal =& Request::getJournal();
 		$apikey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
 		if (empty($apikey)) {
 			return false;
@@ -220,25 +162,13 @@ class AkismetPlugin extends GenericPlugin {
 					'comment_type' => 'signup',
 					'comment_author' => implode(' ', array_filter(array($form->getData('firstName'), $form->getData('middleName'), $form->getData('lastName')))),
 					'comment_author_email' => $form->getData('email'),
-					'comment_author_url' => $form->getData('userUrl'),
-					'comment_content' => implode(' ', array_values($form->getData('biography'))), //ticket 1163344 with Akismet suggests: "I'd recommend just making one comment-check call with all of the translated text at once."
 				);
 				$errorField = 'username';
-				break;
-			case 'commentform::validate':
-				$form = $args[0];
-				$data = array(
-					'comment_type' => 'comment',
-					'comment_author' => $form->getData('posterName'),
-					'comment_author_email' => $form->getData('posterEmail'),
-					'comment_content' => implode("\n", array($form->getData('title'), $form->getData('body'))),
-				);
-				$errorField = 'body';
 				break;
 			default:
 				return false;
 		}
-		$locales = $journal->getSupportedFormLocaleNames();
+		$locales = $context->getSupportedFormLocaleNames();
 		$iso639_1 = array();
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
@@ -247,12 +177,13 @@ class AkismetPlugin extends GenericPlugin {
 		$data = array_merge(
 			$data,
 			array(
-				'blog' => $journal->getUrl(),
+				'blog' => $request->getBaseUrl(),
 				'user_ip' => $_SERVER['REMOTE_ADDR'],
 				'user_agent' => $_SERVER['HTTP_USER_AGENT'],
 				'referrer' => $_SERVER['HTTP_REFERER'],
 				'blog_lang' => implode(', ', array_unique($iso639_1)),
 				'blog_charset' => '',
+				'is_test' => 'true',
 			)
 		);
 		// if the form is already invalid, do not check Akismet
@@ -316,9 +247,6 @@ class AkismetPlugin extends GenericPlugin {
 				$session =& $sessionManager->getUserSession();
 				$data = $session->getSessionVar($this->getName()."::".$this->dataUserSetting);
 				break;
-			case 'commentform::execute':
-				// Currently UserSettingsDAO hardcodes associations by journal
-				// If this were relaxed, we could store spam submissions by associated comment
 			default:
 				return false;
 		}
@@ -345,44 +273,56 @@ class AkismetPlugin extends GenericPlugin {
 	}
 
 	/**
-	 * Hook callback: register output filter to add option to mark spam user
-	 * @see TemplateManager::display()
+	 * Adds an additional link to user grid row
+	 * @param $hookName string The name of the invoked hook
+	 * @param $params array Hook parameters
 	 */
-	function handleTemplateDisplay($hookName, $args) {
-		$templateMgr =& $args[0];
-		$template =& $args[1];
+	public function templateFetchCallback($hookName, $params) {
+		$request = $this->getRequest();
+		$router = $request->getRouter();
 
-		switch ($template) {
-			case 'manager/people/userProfileForm.tpl':
-				$userid = $templateMgr->get_template_vars('userId');
-				if ($userid) {
-					$data = $this->getAkismetData($userid);
-					if (isset($data) && !empty($data)) {
-						$templateMgr->register_outputfilter(array($this, 'markSpamFilter'));
-					}
+		$resourceName = $params[1];
+		if ($resourceName === 'controllers/grid/gridRow.tpl') {
+			$templateMgr = $params[0];
+			if (method_exists($templateMgr, 'getTemplateVars')) {
+				// Smarty 3
+				$row = $templateMgr->getTemplateVars('row');
+			} else {
+				// Smarty 2
+				$row = $templateMgr->get_template_vars('row');
+			}
+			$data = $row ? $row->getData() : array();
+			if (is_a($data, 'User')) {
+				$userid = $data->getId();
+				$akismetData = $this->getAkismetData($userid);
+				if (isset($akismetData) && !empty($akismetData)) {
+					$row->addAction(new LinkAction(
+						'flagAsSpam',
+						new RemoteActionConfirmationModal(
+							$request->getSession(),
+							__('plugins.generic.akismet.actions.confirmFlagAsSpam'),
+							__('plugins.generic.akismet.actions.flagAsSpam'),
+							$router->url($request, null, null, 'markAsSpam', null, array('userid' => $userid))
+							),
+						__('plugins.generic.akismet.actions.flagAsSpam'),
+						null,
+						__('plugins.generic.akismet.grid.action.flagAsSpam')
+					));
 				}
-				break;
+			}
 		}
-		return false;
 	}
 
 	/**
-	 * Output filter to create a "mark spam" button on a user's profile
-	 * @param $output string
-	 * @param $templateMgr TemplateManager
-	 * @return $string
+	 * @see PKPComponentRouter::route()
 	 */
-	function markSpamFilter($output, &$templateMgr) {
-		if (preg_match('/<form id="userForm"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-			$templateMgr->assign('akismetPlugin', $this->getName());
-			$offset = $matches[0][1];
-			$newOutput = substr($output, 0, $offset);
-			$newOutput .= $templateMgr->fetch($this->getTemplatePath() . 'submitSpam.tpl');;
-			$newOutput .= substr($output, $offset);
-			$output = $newOutput;
+	public function callbackLoadHandler($hookName, $args) {
+		if ($args[0] === "grid.settings.user.UserGridHandler" && $args[1] === "markAsSpam") {
+			$args[0] = "plugins.generic.akismet.AkismetHandler";
+			import($args[0]);
+			return true;
 		}
-		$templateMgr->unregister_outputfilter('markSpamFilter');
-		return $output;
+		return false;
 	}
 
 	/**
@@ -435,4 +375,3 @@ class AkismetPlugin extends GenericPlugin {
 	}
 
 }
-?>
