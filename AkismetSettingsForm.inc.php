@@ -40,13 +40,14 @@ class AkismetSettingsForm extends Form {
 		$plugin = $this->_plugin;
 
 		$this->setData('akismetKey', $plugin->getSetting(CONTEXT_SITE, 'akismetKey'));
+		$this->setData('akismetPrivacyNotice', $plugin->getSetting(CONTEXT_SITE, 'akismetPrivacyNotice'));
 	}
 
 	/**
 	 * Assign form data to user-submitted data.
 	 */
 	function readInputData() {
-		$this->readUserVars(array('akismetKey'));
+		$this->readUserVars(array('akismetKey', 'akismetPrivacyNotice'));
 	}
 
 	/**
@@ -55,6 +56,7 @@ class AkismetSettingsForm extends Form {
 	function execute() {
 		$plugin = $this->_plugin;
 		$plugin->updateSetting(CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
+		$plugin->updateSetting(CONTEXT_SITE, 'akismetPrivacyNotice', $this->getData('akismetPrivacyNotice'), 'boolean');
 	}
 
 	/**

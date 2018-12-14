@@ -45,6 +45,8 @@ class AkismetPlugin extends GenericPlugin {
 			HookRegistry::register('TemplateManager::fetch', array($this, 'templateFetchCallback'));
 			// Add a handler to process a missed spam user
 			HookRegistry::register('LoadComponentHandler', array($this, 'callbackLoadHandler'));
+			// Register callback to add text to registration page
+			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
 			}
 		return $success;
 	}
@@ -310,6 +312,38 @@ class AkismetPlugin extends GenericPlugin {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Hook callback: register output filter to add privacy notice
+	 * @see TemplateManager::display()
+	 */
+	function handleTemplateDisplay($hookName, $args) {
+		$templateMgr = $args[0];
+		$template = $args[1];
+		if ($template === 'frontend/pages/userRegister.tpl' && $this->getSetting(CONTEXT_SITE, 'akismetPrivacyNotice')) {
+			$templateMgr->register_outputfilter(array($this, 'registrationFilter'));
+		}
+		return false;
+	}
+
+	/**
+	 * Output filter adds privacy notice to registration form.
+	 * @param $output string
+	 * @param $templateMgr TemplateManager
+	 * @return $string
+	 */
+	function registrationFilter($output, $templateMgr) {
+		if (preg_match('/<form[^>]+id="register"[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+			$match = $matches[0][0];
+			$offset = $matches[0][1];
+			$newOutput = substr($output, 0, $offset+strlen($match));
+			$newOutput .= '<div id="akismetprivacy">'.__('plugins.generic.akismet.privacyNotice').'</div>';
+			$newOutput .= substr($output, $offset+strlen($match));
+			$output = $newOutput;
+		}
+		$templateMgr->unregister_outputfilter('registrationFilter');
+		return $output;
 	}
 
 	/**

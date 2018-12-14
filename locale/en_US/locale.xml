@@ -17,11 +17,13 @@
 	<message key="plugins.generic.akismet.description"><![CDATA[Integrate OJS with Akismet for new user registrations.  Through this plugin, OJS can submit each new user registration to Akismet, and will reject those Akismet identifies as spam.]]></message>
 	<message key="plugins.generic.akismet.spamDetected">This entry has been flagged as spam.</message>
 	<message key="plugins.generic.akismet.spamFailed">Flagging this entry as spam failed.</message>
+	<message key="plugins.generic.akismet.privacyNotice"><![CDATA[All information collected via this form (except for the password) may be submitted to a third party (Akismet) for spam filtering.  Please review <a href="https://automattic.com/privacy-notice/" target="_blank">the Akismet service's privacy notice</a>.]]></message>
 	<!-- Akismet Settings Management -->
 	<message key="plugins.generic.akismet.manager.akismetSettings">Akismet Settings</message>
 	<message key="plugins.generic.akismet.manager.settings.description"><![CDATA[<p>Please provide the Akismet API key.  You must already have registered with <a href="https://akismet.com/">Akismet</a> for the service.</p>]]></message>
 	<message key="plugins.generic.akismet.manager.settings.akismetKey">Akismet API key</message>
 	<message key="plugins.generic.akismet.manager.settings.akismetKeyRequired">The Akismet API key is required.</message>
+	<message key="plugins.generic.akismet.manager.settings.akismetPrivacyNotice">Display a privacy notice on the registration page.</message>
 	<!-- Akismet UI actions -->
 	<message key="plugins.generic.akismet.actions.flagAsSpam">Report as spam</message>
 	<message key="plugins.generic.akismet.grid.action.flagAsSpam">Report as spam to Akismet</message>
