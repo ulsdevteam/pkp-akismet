@@ -285,6 +285,7 @@ class AkismetPlugin extends GenericPlugin {
 		$resourceName = $params[1];
 		if ($resourceName === 'controllers/grid/gridRow.tpl') {
 			$templateMgr = $params[0];
+			// fetch the gridrow from the template
 			if (method_exists($templateMgr, 'getTemplateVars')) {
 				// Smarty 3
 				$row = $templateMgr->getTemplateVars('row');
@@ -293,10 +294,15 @@ class AkismetPlugin extends GenericPlugin {
 				$row = $templateMgr->get_template_vars('row');
 			}
 			$data = $row ? $row->getData() : array();
+			// Is this a User grid?
 			if (is_a($data, 'User')) {
+				// userid from the grid
 				$userid = $data->getId();
 				$akismetData = $this->getAkismetData($userid);
-				if (isset($akismetData) && !empty($akismetData)) {
+				// current user
+				$user = $request->getUser();
+				// Is data present, and is the user able to administer this row?
+				if (isset($akismetData) && !empty($akismetData) && Validation::canAdminister($userid, $user->getId())) {
 					$row->addAction(new LinkAction(
 						'flagAsSpam',
 						new RemoteActionConfirmationModal(
