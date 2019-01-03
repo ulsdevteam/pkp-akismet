@@ -27,13 +27,10 @@ class AkismetPlugin extends GenericPlugin {
 	var $dataUserSetting = 'submittedData';
 
 	/**
-	 * Called as a plugin is registered to the registry
-	 * @param $category String Name of category plugin was registered to
-	 * @return boolean True iff plugin initialized successfully; if false,
-	 * 	the plugin will not be registered.
+	 * @copydoc LazyLoadPlugin::register()
 	 */
-	function register($category, $path) {
-		$success = parent::register($category, $path);
+	function register($category, $path, $mainContextId = NULL) {
+		$success = parent::register($category, $path, $mainContextId);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		if ($success && $this->getEnabled()) {
 
@@ -55,9 +52,9 @@ class AkismetPlugin extends GenericPlugin {
 	 * Override the getEnabled() method to support CLI use
 	 * @see LazyLoadPlugin::getEnabled
 	 */
-	function getEnabled() {
+	function getEnabled($contextId = NULL) {
 		// Check the parent's functionality for normal enabling at the journal level
-		if (parent::getEnabled()) {
+		if (parent::getEnabled($contextId)) {
 			return true;
 		}
 		// If we are running in a CLI, the plugin is always enabled at the site level
