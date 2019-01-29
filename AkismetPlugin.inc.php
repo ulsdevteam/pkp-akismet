@@ -299,7 +299,7 @@ class AkismetPlugin extends GenericPlugin {
 				// current user
 				$user = $request->getUser();
 				// Is data present, and is the user able to administer this row?
-				if (isset($akismetData) && !empty($akismetData) && Validation::canAdminister($userid, $user->getId())) {
+				if ($row->hasActions() && isset($akismetData) && !empty($akismetData) && Validation::canAdminister($userid, $user->getId())) {
 					$row->addAction(new LinkAction(
 						'flagAsSpam',
 						new RemoteActionConfirmationModal(
