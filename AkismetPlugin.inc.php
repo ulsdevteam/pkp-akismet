@@ -300,6 +300,7 @@ class AkismetPlugin extends GenericPlugin {
 				$user = $request->getUser();
 				// Is data present, and is the user able to administer this row?
 				if ($row->hasActions() && isset($akismetData) && !empty($akismetData) && Validation::canAdminister($userid, $user->getId())) {
+					import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
 					$row->addAction(new LinkAction(
 						'flagAsSpam',
 						new RemoteActionConfirmationModal(
