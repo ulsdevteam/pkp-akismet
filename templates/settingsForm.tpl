@@ -21,9 +21,9 @@
 	<div id="description">{translate key="plugins.generic.akismet.manager.settings.description"}</div>
 
 	{fbvFormArea id="akismetSettingsFormArea"}
-		{fbvElement type="text" name="akismetKey" value=$akismetKey label="plugins.generic.akismet.manager.settings.akismetKey"}
+		{fbvElement id="akismetKey" type="text" name="akismetKey" value=$akismetKey label="plugins.generic.akismet.manager.settings.akismetKey"}
 		{fbvFormSection list="true" id="akismetCheckboxList"}
-			{fbvElement type="checkbox" name="akismetPrivacyNotice" checked=$akismetPrivacyNotice|compare:true label="plugins.generic.akismet.manager.settings.akismetPrivacyNotice"}
+			{fbvElement id="akismetPrivacyNotice" type="checkbox" name="akismetPrivacyNotice" checked=$akismetPrivacyNotice|compare:true label="plugins.generic.akismet.manager.settings.akismetPrivacyNotice"}
 		{/fbvFormSection}
 	{/fbvFormArea}
 

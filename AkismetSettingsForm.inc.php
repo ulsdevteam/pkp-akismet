@@ -27,7 +27,7 @@ class AkismetSettingsForm extends Form {
 	function __construct($plugin) {
 		$this->_plugin = $plugin;
 		
-		parent::__construct($plugin->getTemplatePath() . 'settingsForm.tpl');
+		parent::__construct(method_exists($plugin, 'getTemplateResource') ? $plugin->getTemplateResource('settingsForm.tpl') : $plugin->getTemplatePath() . 'settingsForm.tpl');
 
 		$this->addCheck(new FormValidator($this, 'akismetKey', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.akismet.manager.settings.akismetKeyRequired'));
 		$this->addCheck(new FormValidatorPost($this));
@@ -63,7 +63,7 @@ class AkismetSettingsForm extends Form {
 	 * Fetch the form.
 	 * @copydoc Form::fetch()
 	 */
-	function fetch($request) {
+	function fetch($request, $template = NULL, $display = false) {
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('pluginName', $this->_plugin->getName());
 		return parent::fetch($request);
