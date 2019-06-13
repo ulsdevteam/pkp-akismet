@@ -12,8 +12,8 @@
 <version>
 	<application>akismet</application>
 	<type>plugins.generic</type>
-	<release>1.2.1.0</release>
-	<date>2019-02-14</date>
+	<release>1.2.2.0</release>
+	<date>2019-06-13</date>
 	<lazy-load>1</lazy-load>
 	<class>AkismetPlugin</class>
 </version>
