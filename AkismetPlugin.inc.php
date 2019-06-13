@@ -240,10 +240,25 @@ class AkismetPlugin extends GenericPlugin {
 		switch ($hookName) {
 			case 'registrationform::execute':
 				// The original data can be found in the user session, per checkAkismet()
-				$user = $args[1];
 				$sessionManager =& SessionManager::getManager();
 				$session =& $sessionManager->getUserSession();
 				$data = $session->getSessionVar($this->getName()."::".$this->dataUserSetting);
+				// Prior to 3.1.2 the user was passed as an argument
+				$user = $args[1];
+				// For 3.1.2 and 3.1.2-1, we need a hack:
+				if (!$user) {
+					$form = $args[0];
+					$username = $form->getData('username');
+					$userDao = DAORegistry::getDAO('UserDAO');
+					$settingName = $this->getName()."::".$this->dataUserSetting;
+					$session->unsetSessionVar($this->getName()."::".settingName);
+					// On shutdown, persist the Akismet setting to the new user account. (https://github.com/pkp/pkp-lib/issues/4601)
+					register_shutdown_function(function() use ($username, $userDao, $settingName, $data) {
+						$user = $userDao->getByUsername($username);
+						$user->setData($settingName, $data);
+						$userDao->updateObject($user);
+					});
+				}
 				break;
 			default:
 				return false;
@@ -326,7 +341,13 @@ class AkismetPlugin extends GenericPlugin {
 		$templateMgr = $args[0];
 		$template = $args[1];
 		if ($template === 'frontend/pages/userRegister.tpl' && $this->getSetting(CONTEXT_SITE, 'akismetPrivacyNotice')) {
-			$templateMgr->register_outputfilter(array($this, 'registrationFilter'));
+			if (method_exists($templateMgr, 'register_outputfilter')) {
+				// 3.1.1 and earlier (Smarty 2)
+				$templateMgr->register_outputfilter(array($this, 'registrationFilter'));
+			} else {
+				// 3.1.2 and later (Smarty 3)
+				$templateMgr->registerFilter('output', array($this, 'registrationFilter'));
+			}
 		}
 		return false;
 	}
@@ -345,8 +366,14 @@ class AkismetPlugin extends GenericPlugin {
 			$newOutput .= '<div id="akismetprivacy">'.__('plugins.generic.akismet.privacyNotice').'</div>';
 			$newOutput .= substr($output, $offset+strlen($match));
 			$output = $newOutput;
+			if (method_exists($templateMgr, 'unregister_outputfilter')) {
+				// 3.1.1 and earlier (Smarty 2)
+				$templateMgr->unregister_outputfilter('registrationFilter');
+			} else {
+				// 3.1.2 and later (Smarty 3)
+				$templateMgr->unregisterFilter('output', array($this, 'registrationFilter'));
+			}
 		}
-		$templateMgr->unregister_outputfilter('registrationFilter');
 		return $output;
 	}
 
