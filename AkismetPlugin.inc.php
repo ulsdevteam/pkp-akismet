@@ -146,6 +146,13 @@ class AkismetPlugin extends GenericPlugin {
 	function checkAkismet($hookName, $args) {
 		$request = Application::getRequest();
 		$context = $request->getContext();
+		$locales = array();
+		if (!$context) {
+			$site = $request->getSite();
+			$locales = $site->getSupportedLocaleNames();
+		} else {
+			$locales = $context->getSupportedFormLocaleNames();
+		}
 		// The Akismet API key is required
 		$apikey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
 		if (empty($apikey)) {
@@ -167,7 +174,6 @@ class AkismetPlugin extends GenericPlugin {
 			default:
 				return false;
 		}
-		$locales = $context->getSupportedFormLocaleNames();
 		$iso639_1 = array();
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
