@@ -112,7 +112,7 @@ class AkismetPlugin extends GenericPlugin {
 	 * @copydoc Plugin::manage()
 	 */
 	function manage($args, $request) {
-		$user =& Request::getUser();
+		$user = $request->getUser();
 		import('classes.notification.NotificationManager');
 		$notificationManager = new NotificationManager();
 		switch ($request->getUserVar('verb')) {
