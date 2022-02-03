@@ -433,14 +433,24 @@ class AkismetPlugin extends GenericPlugin {
 		$httpRequest .= "User-Agent: {$ua}\r\n";
 		$httpRequest .= "\r\n{$requestBody}";
 		$response = $errno = $errstr = $headers = $content = '';
-		if (false != ($socket = fsockopen('ssl://'.$host, $port, $errno, $errstr))) {
-			fwrite($socket, $httpRequest);
-			while (!feof($socket)) {
-				$response .= fgets($socket);
-			}
-			fclose($socket);
-			list($headers, $content) = explode("\r\n\r\n", $response, 2);
+		$httpClient = Application::get()->getHttpClient();
+		try {$response = $httpClient->request(
+			'POST',
+			'https://'.$host.$path,
+			[
+			'User-Agent'=>$ua,
+			'form_params' => $data
+			]
+		);
+		$content = (string) $response->getBody();
 		}
+		catch (Exception $e){
+			$content='';
+			error_log($e->getMessage());
+		}
+		
+		
+
 		return ((!$flag && $content === 'true') || ($flag && $content === 'Thanks for making the web a better place.'));
 	}
 

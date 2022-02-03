@@ -1,0 +1,51 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-02-02T11:39:21-05:00\n"
+"PO-Revision-Date: 2022-02-02T11:39:21-05:00\n"
+"Language: \n"
+
+msgid "plugins.generic.akismet.displayName"
+msgstr "Akismet Anti-Spam Plugin"
+
+msgid "plugins.generic.akismet.description"
+msgstr "Integrate OJS with Akismet for new user registrations.  Through this plugin, OJS can submit each new user registration to Akismet, and will reject those Akismet identifies as spam."
+
+msgid "plugins.generic.akismet.spamDetected"
+msgstr "This entry has been flagged as spam."
+
+msgid "plugins.generic.akismet.spamFailed"
+msgstr "Flagging this entry as spam failed."
+
+msgid "plugins.generic.akismet.privacyNotice"
+msgstr "All information collected via this form (except for the password) may be submitted to a third party (Akismet) for spam filtering.  Please review <a href=\"https://automattic.com/privacy-notice/\" target=\"_blank\">the Akismet service's privacy notice</a>."
+
+msgid "plugins.generic.akismet.manager.akismetSettings"
+msgstr "Akismet Settings"
+
+msgid "plugins.generic.akismet.manager.settings.description"
+msgstr "<p>Please provide the Akismet API key.  You must already have registered with <a href=\"https://akismet.com/\">Akismet</a> for the service.</p>"
+
+msgid "plugins.generic.akismet.manager.settings.akismetKey"
+msgstr "Akismet API key"
+
+msgid "plugins.generic.akismet.manager.settings.akismetKeyRequired"
+msgstr "The Akismet API key is required."
+
+msgid "plugins.generic.akismet.manager.settings.akismetPrivacyNotice"
+msgstr "Display a privacy notice on the registration page."
+
+msgid "plugins.generic.akismet.actions.flagAsSpam"
+msgstr "Report as spam"
+
+msgid "plugins.generic.akismet.grid.action.flagAsSpam"
+msgstr "Report as spam to Akismet"
+
+msgid "plugins.generic.akismet.actions.confirmFlagAsSpam"
+msgstr "Do you want to report this user's registration to Akismet as spam?"
