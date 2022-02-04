@@ -413,26 +413,11 @@ class AkismetPlugin extends GenericPlugin {
 			return false;
 		}
 		// build the Akismet HTTP request
-		$requestBody = '';
-		foreach ($data as $k => $v) {
-			if (!empty($v)) {
-				$requestBody .= '&'.$k.'='.urlencode($v);
-			}
-		}
-		$requestBody = ltrim($requestBody, '&');
 		$host = $akismetKey.'.rest.akismet.com';
-		$port = 443;
 		$path = '/1.1/' . ($flag ? 'submit-spam' : 'comment-check');
 		$versionDao =& DAORegistry::getDAO('VersionDAO');
 		$dbVersion =& $versionDao->getCurrentVersion();
 		$ua = $dbVersion->getProduct().' '.$dbVersion->getVersionString().' | Akismet/3.1.7';
-		$httpRequest = "POST {$path} HTTP/1.0\r\n";
-		$httpRequest .= "Host: {$host}\r\n";
-		$httpRequest .= "Content-Type: application/x-www-form-urlencoded\r\n";
-		$httpRequest .= "Content-Length: ".strlen($requestBody)."\r\n";
-		$httpRequest .= "User-Agent: {$ua}\r\n";
-		$httpRequest .= "\r\n{$requestBody}";
-		$response = $errno = $errstr = $headers = $content = '';
 		$httpClient = Application::get()->getHttpClient();
 		try {$response = $httpClient->request(
 			'POST',
@@ -448,9 +433,6 @@ class AkismetPlugin extends GenericPlugin {
 			$content='';
 			error_log($e->getMessage());
 		}
-		
-		
-
 		return ((!$flag && $content === 'true') || ($flag && $content === 'Thanks for making the web a better place.'));
 	}
 
