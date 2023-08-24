@@ -53,10 +53,10 @@ class AkismetSettingsForm extends Form {
 	/**
 	 * Save settings.
 	 */
-	function execute() {
+	function execute(...$functionArgs) {
 		$plugin = $this->_plugin;
 		$plugin->updateSetting(CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
-		$plugin->updateSetting(CONTEXT_SITE, 'akismetPrivacyNotice', $this->getData('akismetPrivacyNotice'), 'boolean');
+		$plugin->updateSetting(CONTEXT_SITE, 'akismetPrivacyNotice', $this->getData('akismetPrivacyNotice'), 'bool');
 	}
 
 	/**
