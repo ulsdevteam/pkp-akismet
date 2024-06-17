@@ -178,7 +178,7 @@ class AkismetPlugin extends GenericPlugin {
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
 			$localeList=explode('_', $locale);
-			$iso639_1[] = array_pop($localeList);
+			$iso639_1[] = $localeList[0];
 		}
 		$data = array_merge(
 			$data,
