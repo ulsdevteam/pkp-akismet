@@ -13,7 +13,7 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-
+use PKP\i18n;
 class AkismetPlugin extends GenericPlugin {
 	
 	/**
@@ -177,8 +177,8 @@ class AkismetPlugin extends GenericPlugin {
 		$iso639_1 = array();
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
-			$localeList=explode('_', $locale);
-			$iso639_1[] = $localeList[0];
+			// Store the first part of the locale
+			$iso639_1[] = PKPLocale::getIso1FromLocale($locale);
 		}
 		$data = array_merge(
 			$data,
