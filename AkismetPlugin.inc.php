@@ -13,7 +13,6 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-use PKP\i18n;
 class AkismetPlugin extends GenericPlugin {
 	
 	/**
