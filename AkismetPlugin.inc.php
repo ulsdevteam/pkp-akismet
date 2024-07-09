@@ -13,7 +13,6 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-
 class AkismetPlugin extends GenericPlugin {
 	
 	/**
@@ -69,7 +68,7 @@ class AkismetPlugin extends GenericPlugin {
 	 * @see DAO::getAddtionalFieldNames
 	 */
 	function addAkismetSetting($hookname, $args) {
-		$fields =& $args[1];
+		$fields = $args[1];
 		$fields = array_merge($fields, array($this->getName()."::".$this->dataUserSetting));
 		return false;
 	}
@@ -120,7 +119,7 @@ class AkismetPlugin extends GenericPlugin {
 				if (!Validation::isSiteAdmin()) {
 					return new JSONMessage(false);
 				}
-				$templateMgr =& TemplateManager::getManager();
+				$templateMgr = TemplateManager::getManager();
 				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
 
 				$this->import('AkismetSettingsForm');
@@ -144,7 +143,7 @@ class AkismetPlugin extends GenericPlugin {
 	 * @see Form::validate()
 	 */
 	function checkAkismet($hookName, $args) {
-		$request = Application::getRequest();
+		$request = Application::get()->getRequest();
 		$context = $request->getContext();
 		$locales = array();
 		if (!$context) {
@@ -177,7 +176,8 @@ class AkismetPlugin extends GenericPlugin {
 		$iso639_1 = array();
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
-			$iso639_1[] = array_pop(explode('_', $locale, 1));
+			// Store the first part of the locale
+			$iso639_1[] = PKPLocale::getIso1FromLocale($locale);
 		}
 		$data = array_merge(
 			$data,
@@ -200,8 +200,8 @@ class AkismetPlugin extends GenericPlugin {
 		} else if ($hookName === 'registrationform::validate') {
 			// remember this successful check in the session
 			// we'll store it as a user setting on form execution
-			$sessionManager =& SessionManager::getManager();
-			$session =& $sessionManager->getUserSession();
+			$sessionManager = SessionManager::getManager();
+			$session = $sessionManager->getUserSession();
 			$session->setSessionVar($this->getName()."::".$this->dataUserSetting, $data);
 		}
 		// returning false allows processing to continue
@@ -246,8 +246,8 @@ class AkismetPlugin extends GenericPlugin {
 		switch ($hookName) {
 			case 'registrationform::execute':
 				// The original data can be found in the user session, per checkAkismet()
-				$sessionManager =& SessionManager::getManager();
-				$session =& $sessionManager->getUserSession();
+				$sessionManager = SessionManager::getManager();
+				$session = $sessionManager->getUserSession();
 				$data = $session->getSessionVar($this->getName()."::".$this->dataUserSetting);
 				// Prior to 3.1.2 the user was passed as an argument
 				$user = $args[1];
@@ -257,7 +257,7 @@ class AkismetPlugin extends GenericPlugin {
 					$username = $form->getData('username');
 					$userDao = DAORegistry::getDAO('UserDAO');
 					$settingName = $this->getName()."::".$this->dataUserSetting;
-					$session->unsetSessionVar($this->getName()."::".settingName);
+					$session->unsetSessionVar($this->getName()."::".$settingName);
 					// On shutdown, persist the Akismet setting to the new user account. (https://github.com/pkp/pkp-lib/issues/4601)
 					register_shutdown_function(function() use ($username, $userDao, $settingName, $data) {
 						$user = $userDao->getByUsername($username);
@@ -415,8 +415,8 @@ class AkismetPlugin extends GenericPlugin {
 		// build the Akismet HTTP request
 		$host = $akismetKey.'.rest.akismet.com';
 		$path = '/1.1/' . ($flag ? 'submit-spam' : 'comment-check');
-		$versionDao =& DAORegistry::getDAO('VersionDAO');
-		$dbVersion =& $versionDao->getCurrentVersion();
+		$versionDao = DAORegistry::getDAO('VersionDAO');
+		$dbVersion = $versionDao->getCurrentVersion();
 		$ua = $dbVersion->getProduct().' '.$dbVersion->getVersionString().' | Akismet/3.1.7';
 		$httpClient = Application::get()->getHttpClient();
 		try {$response = $httpClient->request(
