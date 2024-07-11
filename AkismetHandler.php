@@ -9,8 +9,12 @@
  * @ingroup plugins_generic_akismet
  * @brief Handles controller requests for Akismet plugin.
  */
+namespace APP\plugins\generic\akismet;
 
-import('classes.handler.Handler');
+use APP\handler\Handler;
+use PKP\core\JSONMessage;
+use PKP\security\Validation;
+use PKP\plugins\PluginRegistry;
 
 class AkismetHandler extends Handler {
 
