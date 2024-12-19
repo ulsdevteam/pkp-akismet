@@ -11,6 +11,11 @@
  *
  * @brief CLI tool for marking a user as missed spam by username within Akismet.
  */
+namespace APP\plugins\generic\akismet;
+use PKP\db\DAORegistry;
+use PKP\plugins\PluginRegistry;
+use PKP\cliTool\CommandLineTool;
+use APP\facades\Repo;
 
 require(dirname(dirname(dirname(dirname(__FILE__)))) . '/tools/bootstrap.inc.php');
 
@@ -49,8 +54,7 @@ class markSpamUser extends CommandLineTool {
 	 */
 	function execute() {
 		$plugin = PluginRegistry::getPlugin('generic', 'akismetplugin');
-		$userDao = DAORegistry::getDAO('UserDAO');
-
+		$userDAO = Repo::user()->dao;
 		$user = $userDao->getByUsername($this->username);
 
 		$userId = isset($user) ? $user->getId() : null;
