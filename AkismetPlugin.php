@@ -11,8 +11,26 @@
  *
  * @brief Akismet plugin class
  */
+namespace APP\plugins\generic\akismet;
 
-import('lib.pkp.classes.plugins.GenericPlugin');
+use PKP\plugins\GenericPlugin;
+use PKP\config\Config;
+use PKP\plugins\Hook;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use PKP\core\JSONMessage;
+use PKP\db\DAORegistry;
+use PKP\linkAction\request\RemoteActionConfirmationModal;
+use PKP\session\SessionManager;
+use PKP\security\Validation;
+use PKP\core\PKPApplication;
+use Exception;
+use APP\facades\Repo;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use APP\notification\NotificationManager;
+use APP\plugins\generic\akismet\AkismetSettingsForm as AkismetSettingsForm;
+
 class AkismetPlugin extends GenericPlugin {
 	
 	/**
@@ -34,15 +52,15 @@ class AkismetPlugin extends GenericPlugin {
 		if ($success && $this->getEnabled()) {
 
 			// Enable Akismet anti-spam check of new registrations
-			HookRegistry::register('registrationform::validate', array(&$this, 'checkAkismet'));
-			HookRegistry::register('registrationform::execute', array(&$this, 'storeAkismetData'));
-			HookRegistry::register('userdao::getAdditionalFieldNames', array(&$this, 'addAkismetSetting'));
+			Hook::add('registrationform::validate', array(&$this, 'checkAkismet'));
+			Hook::add('registrationform::execute', array(&$this, 'storeAkismetData'));
+			Hook::add('userdao::getAdditionalFieldNames', array(&$this, 'addAkismetSetting'));
 			// Add a link to mark a missed spam user
-			HookRegistry::register('TemplateManager::fetch', array($this, 'templateFetchCallback'));
+			Hook::add('TemplateManager::fetch', array($this, 'templateFetchCallback'));
 			// Add a handler to process a missed spam user
-			HookRegistry::register('LoadComponentHandler', array($this, 'callbackLoadHandler'));
+			Hook::add('LoadComponentHandler', array($this, 'callbackLoadHandler'));
 			// Register callback to add text to registration page
-			HookRegistry::register('TemplateManager::display', array($this, 'handleTemplateDisplay'));
+			Hook::add('TemplateManager::display', array($this, 'handleTemplateDisplay'));
 			}
 		return $success;
 	}
@@ -94,7 +112,6 @@ class AkismetPlugin extends GenericPlugin {
 	 */
 	function getActions($request, $verb) {
 		$router = $request->getRouter();
-		import('lib.pkp.classes.linkAction.request.AjaxModal');
 		// Must be site administrator to access the settings option
 		return array_merge(
 				$this->getEnabled() && Validation::isSiteAdmin() ? array(
@@ -112,17 +129,14 @@ class AkismetPlugin extends GenericPlugin {
 	 */
 	function manage($args, $request) {
 		$user = $request->getUser();
-		import('classes.notification.NotificationManager');
 		$notificationManager = new NotificationManager();
 		switch ($request->getUserVar('verb')) {
 			case 'settings':
 				if (!Validation::isSiteAdmin()) {
 					return new JSONMessage(false);
 				}
-				$templateMgr = TemplateManager::getManager();
-				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
-
-				$this->import('AkismetSettingsForm');
+				$templateMgr =& TemplateManager::getManager($request);
+				$templateMgr->registerPlugin('function', 'plugin_url', array(&$this, 'smartyPluginUrl'));
 				$form = new AkismetSettingsForm($this);
 				if ($request->getUserVar('save')) {
 					$form->readInputData();
@@ -153,7 +167,7 @@ class AkismetPlugin extends GenericPlugin {
 			$locales = $context->getSupportedFormLocaleNames();
 		}
 		// The Akismet API key is required
-		$apikey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
+		$apikey = $this->getSetting(PKPApplication::CONTEXT_SITE, 'akismetKey');
 		if (empty($apikey)) {
 			return false;
 		}
@@ -214,8 +228,8 @@ class AkismetPlugin extends GenericPlugin {
 	 * @return array
 	 */
 	function getAkismetData($userId) {
-		$userdao = DAORegistry::getDAO('UserDAO');
-		$user = $userdao->getById($userId);
+		$userDAO = Repo::user()->dao;
+		$user = $userDAO->get($userId);
 		if (isset($user)) {
 			return $user->getData($this->getName()."::".$this->dataUserSetting);
 		}
@@ -227,11 +241,11 @@ class AkismetPlugin extends GenericPlugin {
 	 * @param $userId int User ID
 	 */
 	function unsetAkismetData($userId) {
-		$userdao = DAORegistry::getDAO('UserDAO');
-		$user = $userdao->getById($userId);
+		$userDAO = Repo::user()->dao;
+		$user = $userDAO->get($userId);
 		if (isset($user)) {
 			$user->setData($this->getName()."::".$this->dataUserSetting, '');
-			$userdao->updateObject($user);
+			Repo::user()->dao->update($user);
 		}
 	}
 
@@ -249,20 +263,17 @@ class AkismetPlugin extends GenericPlugin {
 				$sessionManager = SessionManager::getManager();
 				$session = $sessionManager->getUserSession();
 				$data = $session->getSessionVar($this->getName()."::".$this->dataUserSetting);
-				// Prior to 3.1.2 the user was passed as an argument
-				$user = $args[1];
-				// For 3.1.2 and 3.1.2-1, we need a hack:
 				if (!$user) {
 					$form = $args[0];
 					$username = $form->getData('username');
-					$userDao = DAORegistry::getDAO('UserDAO');
+					$userDAO = Repo::user()->dao;
 					$settingName = $this->getName()."::".$this->dataUserSetting;
 					$session->unsetSessionVar($this->getName()."::".$settingName);
 					// On shutdown, persist the Akismet setting to the new user account. (https://github.com/pkp/pkp-lib/issues/4601)
 					register_shutdown_function(function() use ($username, $userDao, $settingName, $data) {
-						$user = $userDao->getByUsername($username);
+						$user = $userDAO->getByUsername($username);
 						$user->setData($settingName, $data);
-						$userDao->updateObject($user);
+						$userDao->update($user);
 					});
 				}
 				break;
@@ -304,13 +315,7 @@ class AkismetPlugin extends GenericPlugin {
 		if ($resourceName === 'controllers/grid/gridRow.tpl') {
 			$templateMgr = $params[0];
 			// fetch the gridrow from the template
-			if (method_exists($templateMgr, 'getTemplateVars')) {
-				// Smarty 3
-				$row = $templateMgr->getTemplateVars('row');
-			} else {
-				// Smarty 2
-				$row = $templateMgr->get_template_vars('row');
-			}
+			$row = $templateMgr->getTemplateVars('row');
 			$data = $row ? $row->getData() : array();
 			// Is this a User grid?
 			if (is_a($data, 'User')) {
@@ -321,7 +326,6 @@ class AkismetPlugin extends GenericPlugin {
 				$user = $request->getUser();
 				// Is data present, and is the user able to administer this row?
 				if ($row->hasActions() && isset($akismetData) && !empty($akismetData) && Validation::canAdminister($userid, $user->getId())) {
-					import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
 					$row->addAction(new LinkAction(
 						'flagAsSpam',
 						new RemoteActionConfirmationModal(
@@ -346,14 +350,8 @@ class AkismetPlugin extends GenericPlugin {
 	function handleTemplateDisplay($hookName, $args) {
 		$templateMgr = $args[0];
 		$template = $args[1];
-		if ($template === 'frontend/pages/userRegister.tpl' && $this->getSetting(CONTEXT_SITE, 'akismetPrivacyNotice')) {
-			if (method_exists($templateMgr, 'register_outputfilter')) {
-				// 3.1.1 and earlier (Smarty 2)
-				$templateMgr->register_outputfilter(array($this, 'registrationFilter'));
-			} else {
-				// 3.1.2 and later (Smarty 3)
-				$templateMgr->registerFilter('output', array($this, 'registrationFilter'));
-			}
+		if ($template === 'frontend/pages/userRegister.tpl' && $this->getSetting(PKPApplication::CONTEXT_SITE, 'akismetPrivacyNotice')) {
+			$templateMgr->registerFilter('output', array($this, 'registrationFilter'));
 		}
 		return false;
 	}
@@ -372,13 +370,7 @@ class AkismetPlugin extends GenericPlugin {
 			$newOutput .= '<div id="akismetprivacy">'.__('plugins.generic.akismet.privacyNotice').'</div>';
 			$newOutput .= substr($output, $offset+strlen($match));
 			$output = $newOutput;
-			if (method_exists($templateMgr, 'unregister_outputfilter')) {
-				// 3.1.1 and earlier (Smarty 2)
-				$templateMgr->unregister_outputfilter('registrationFilter');
-			} else {
-				// 3.1.2 and later (Smarty 3)
-				$templateMgr->unregisterFilter('output', array($this, 'registrationFilter'));
-			}
+			$templateMgr->unregisterFilter('output', array($this, 'registrationFilter'));
 		}
 		return $output;
 	}
@@ -408,7 +400,7 @@ class AkismetPlugin extends GenericPlugin {
 				return false;
 			}
 		}
-		$akismetKey = $this->getSetting(CONTEXT_SITE, 'akismetKey');
+		$akismetKey = $this->getSetting(PKPApplication::CONTEXT_SITE, 'akismetKey');
 		if (empty($akismetKey)) {
 			return false;
 		}
@@ -441,15 +433,12 @@ class AkismetPlugin extends GenericPlugin {
 	 */
 	function getTemplatePath($inCore = false) {
 		$templatePath = parent::getTemplatePath($inCore);
-		// OJS 3.1.2 and later include the 'templates' directory, but no trailing slash
 		$templateDir = 'templates';
 		if (strlen($templatePath) >= strlen($templateDir)) {
 			if (substr_compare($templatePath, $templateDir, strlen($templatePath) - strlen($templateDir), strlen($templateDir)) === 0) {
 				return $templatePath;
 			}
 		}
-		// OJS 3.1.1 and earlier includes a trailing slash to the plugin path
-		return $templatePath . $templateDir . DIRECTORY_SEPARATOR;
 	}	
 
 }

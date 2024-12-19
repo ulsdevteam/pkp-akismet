@@ -11,9 +11,12 @@
  *
  * @brief Form for site admins to modify Akismet plugin settings
  */
-
-
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\akismet;
+use PKP\form\Form;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorPost;
+use PKP\core\PKPApplication;
+use APP\template\TemplateManager;
 
 class AkismetSettingsForm extends Form {
 
@@ -29,7 +32,7 @@ class AkismetSettingsForm extends Form {
 		
 		parent::__construct(method_exists($plugin, 'getTemplateResource') ? $plugin->getTemplateResource('settingsForm.tpl') : $plugin->getTemplatePath() . 'settingsForm.tpl');
 
-		$this->addCheck(new FormValidator($this, 'akismetKey', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.akismet.manager.settings.akismetKeyRequired'));
+		$this->addCheck(new FormValidator($this, 'akismetKey', FormValidator::FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.akismet.manager.settings.akismetKeyRequired'));
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
@@ -39,8 +42,8 @@ class AkismetSettingsForm extends Form {
 	function initData() {
 		$plugin = $this->_plugin;
 
-		$this->setData('akismetKey', $plugin->getSetting(CONTEXT_SITE, 'akismetKey'));
-		$this->setData('akismetPrivacyNotice', $plugin->getSetting(CONTEXT_SITE, 'akismetPrivacyNotice'));
+		$this->setData('akismetKey', $plugin->getSetting(PKPApplication::CONTEXT_SITE, 'akismetKey'));
+		$this->setData('akismetPrivacyNotice', $plugin->getSetting(PKPApplication::CONTEXT_SITE, 'akismetPrivacyNotice'));
 	}
 
 	/**
@@ -55,8 +58,8 @@ class AkismetSettingsForm extends Form {
 	 */
 	function execute(...$functionArgs) {
 		$plugin = $this->_plugin;
-		$plugin->updateSetting(CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
-		$plugin->updateSetting(CONTEXT_SITE, 'akismetPrivacyNotice', $this->getData('akismetPrivacyNotice'), 'bool');
+		$plugin->updateSetting(PKPApplication::CONTEXT_SITE, 'akismetKey', $this->getData('akismetKey'), 'string');
+		$plugin->updateSetting(PKPApplication::CONTEXT_SITE, 'akismetPrivacyNotice', $this->getData('akismetPrivacyNotice'), 'bool');
 	}
 
 	/**
