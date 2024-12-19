@@ -4,8 +4,8 @@ This plugin verifies new user registrations via the [Akismet anti-spam service](
 
 ## Requirements
 
-* OJS 3.x / OMP 3.1 or later (for OJS 2.4.x, see the ojs-dev-2_4 branch)
-* PHP 5.3 or later
+* OJS 3.4.x
+* PHP 8 or later
 * Akismet API key
 
 ## Installation
@@ -28,6 +28,6 @@ A CLI tool is also provided to report missed spam users to Akismet.
 
 ## Author / License
 
-Written by Clinton Graham for the [University of Pittsburgh](http://www.pitt.edu).  Copyright (c) University of Pittsburgh.
+Written by Clinton Graham and Tazio Polanco for the [University of Pittsburgh](http://www.pitt.edu).  Copyright (c) University of Pittsburgh.
 
 Released under a license of GPL v2 or later.
