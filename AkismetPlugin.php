@@ -24,6 +24,7 @@ use PKP\linkAction\request\RemoteActionConfirmationModal;
 use PKP\session\SessionManager;
 use PKP\security\Validation;
 use PKP\core\PKPApplication;
+use PKP\i18n\PKPLocale;
 use Exception;
 use APP\facades\Repo;
 use APP\core\Application;
