@@ -24,6 +24,7 @@ use PKP\linkAction\request\RemoteActionConfirmationModal;
 use PKP\session\SessionManager;
 use PKP\security\Validation;
 use PKP\core\PKPApplication;
+use PKP\i18n\LocaleConversion;
 use Exception;
 use APP\facades\Repo;
 use APP\core\Application;
@@ -191,7 +192,7 @@ class AkismetPlugin extends GenericPlugin {
 		foreach (array_keys($locales) as $locale) {
 			// Our locale names are of the form ISO639-1 + "_" + ISO3166-1 
 			// Store the first part of the locale
-			$iso639_1[] = PKPLocale::getIso1FromLocale($locale);
+			$iso639_1[] = LocaleConversion::getIso1FromLocale($locale);
 		}
 		$data = array_merge(
 			$data,
